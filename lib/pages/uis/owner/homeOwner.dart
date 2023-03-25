@@ -6,6 +6,7 @@ import 'package:coloc_app/themes/color.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'propertyImagePicker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_native_image/flutter_native_image.dart';
@@ -912,7 +913,14 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                               'imageUrl3': imgUrl3,
                                                                             })
                                                                             .then((_) =>
-                                                                                print('Mise à jour réussie'))
+                                                                                Fluttertoast.showToast(
+                                                                                  msg: "Propriété éditée avec succès.",
+                                                                                  toastLength: Toast.LENGTH_SHORT,
+                                                                                  gravity: ToastGravity.BOTTOM,
+                                                                                  backgroundColor: MyTheme.blue3,
+                                                                                  textColor: Colors.white,
+                                                                                  fontSize: 16.0,
+                                                                                ))
                                                                             .catchError((error) => print('Erreur de mise à jour: $error'));
                                                                         Navigator.pop(
                                                                             context);
@@ -1426,7 +1434,16 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                           'imageUrl1': imgUrl1,
                                           'imageUrl2': imgUrl2,
                                           'imageUrl3': imgUrl3,
-                                        });
+                                        }).then((value) =>
+                                            Fluttertoast.showToast(
+                                              msg:
+                                                  "Propriété ajoutée avec succès.",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                              gravity: ToastGravity.BOTTOM,
+                                              backgroundColor: MyTheme.blue3,
+                                              textColor: Colors.white,
+                                              fontSize: 16.0,
+                                            ));
                                         Navigator.pop(context);
                                       }
                                       _propertyNameController.clear();
