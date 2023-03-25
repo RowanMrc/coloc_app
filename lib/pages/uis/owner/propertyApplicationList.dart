@@ -7,7 +7,8 @@ class PropertyApplicationPage extends StatefulWidget {
 
   PropertyApplicationPage({required this.announceData});
   @override
-  _PropertyApplicationPageState createState() => _PropertyApplicationPageState();
+  _PropertyApplicationPageState createState() =>
+      _PropertyApplicationPageState();
 }
 
 class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
@@ -29,9 +30,13 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
   }
 
   Future<void> initApplications() async {
-    QuerySnapshot<Object?> applicationsSnapshot = await FirebaseFirestore.instance
+    QuerySnapshot<Object?> applicationsSnapshot = await FirebaseFirestore
+        .instance
         .collection("application")
-        .where("id_announce", isEqualTo: FirebaseFirestore.instance.collection('announce').doc(widget.announceData.id))
+        .where("id_announce",
+            isEqualTo: FirebaseFirestore.instance
+                .collection('announce')
+                .doc(widget.announceData.id))
         .get();
     setState(() {
       applications = applicationsSnapshot.docs;
@@ -41,7 +46,10 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
   Future<void> getUsersData() async {
     QuerySnapshot<Object?> usersSnapshot = await FirebaseFirestore.instance
         .collection("Users")
-        .where("id", isEqualTo: FirebaseFirestore.instance.collection('announce').doc(widget.announceData.id))
+        .where("id",
+            isEqualTo: FirebaseFirestore.instance
+                .collection('announce')
+                .doc(widget.announceData.id))
         .get();
     setState(() {
       applications = usersSnapshot.docs;
@@ -61,7 +69,8 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
         itemBuilder: (BuildContext context, int index) {
           return FutureBuilder(
             future: applications[index]["id_candidate"].get(),
-            builder: (BuildContext context, AsyncSnapshot<DocumentSnapshot<Object?>> snapshot) {
+            builder: (BuildContext context,
+                AsyncSnapshot<DocumentSnapshot<Object?>> snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const CircularProgressIndicator();
               } else if (snapshot.hasError) {
@@ -74,17 +83,15 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                   margin: EdgeInsets.all(5),
                   child: applications[index]['state'] == "pending"
                       ? ListTile(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(color: Colors.grey),
-                          ),
                           contentPadding: EdgeInsets.all(0),
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(50),
                             child: Image.network(
                               (user["avatar_url"]),
-                              errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                return Image.asset('assets/images/placeholder.jpg');
+                              errorBuilder: (BuildContext context,
+                                  Object exception, StackTrace? stackTrace) {
+                                return Image.asset(
+                                    'assets/images/placeholder.jpg');
                               },
                               width: 50,
                               height: 50,
@@ -95,12 +102,14 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                             child: Column(
                               children: [
                                 Text(
-                                  applications[index]['description'].length > 125
+                                  applications[index]['description'].length >
+                                          125
                                       ? '${applications[index]['description'].substring(0, 125)}...'
                                       : applications[index]['description'],
                                 ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: [
                                     IconButton(
                                       icon: Icon(
@@ -114,41 +123,70 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                           builder: (BuildContext context) {
                                             // si annonce déja existante, afficher dialog pour dire que annonce deja existante pour la propriete
                                             return StatefulBuilder(
-                                              builder: (BuildContext context, StateSetter setState) {
+                                              builder: (BuildContext context,
+                                                  StateSetter setState) {
                                                 return Stack(
                                                   children: [
                                                     SingleChildScrollView(
                                                       child: Padding(
-                                                        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                        padding: EdgeInsets.only(
+                                                            bottom:
+                                                                MediaQuery.of(
+                                                                        context)
+                                                                    .viewInsets
+                                                                    .bottom),
                                                         child: Container(
-                                                          padding: const EdgeInsets.all(20),
+                                                          padding:
+                                                              const EdgeInsets
+                                                                  .all(20),
                                                           child: Column(
                                                             children: [
-                                                              SizedBox(height: 20.0),
+                                                              SizedBox(
+                                                                  height: 20.0),
                                                               ClipRRect(
-                                                                borderRadius: BorderRadius.circular(50),
-                                                                child: Image.network(
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            50),
+                                                                child: Image
+                                                                    .network(
                                                                   ("user['imageUrl'] as String"),
-                                                                  errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                                                    return Image.asset('assets/images/placeholder.jpg');
+                                                                  errorBuilder: (BuildContext
+                                                                          context,
+                                                                      Object
+                                                                          exception,
+                                                                      StackTrace?
+                                                                          stackTrace) {
+                                                                    return Image
+                                                                        .asset(
+                                                                            'assets/images/placeholder.jpg');
                                                                   },
                                                                   width: 75,
                                                                   height: 75,
                                                                 ),
                                                               ),
-                                                              SizedBox(height: 10.0),
+                                                              SizedBox(
+                                                                  height: 10.0),
                                                               Text(
-                                                                user['first_last_name'],
-                                                                style: TextStyle(
-                                                                  fontSize: 22.0,
-                                                                  fontWeight: FontWeight.bold,
+                                                                user[
+                                                                    'first_last_name'],
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize:
+                                                                      22.0,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
                                                                 ),
                                                               ),
-                                                              SizedBox(height: 20.0),
+                                                              SizedBox(
+                                                                  height: 20.0),
                                                               Divider(),
                                                               ListTile(
-                                                                leading: Icon(Icons.call),
-                                                                title: Text('Appeler au ${user['mobile_phone']}'),
+                                                                leading: Icon(
+                                                                    Icons.call),
+                                                                title: Text(
+                                                                    'Appeler au ${user['mobile_phone']}'),
                                                               ),
                                                             ],
                                                           ),
@@ -175,31 +213,43 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                             .update({
                                               'state': "refused",
                                             })
-                                            .then((_) => print('Mise à jour réussie'))
-                                            .catchError((error) => print('Erreur de mise à jour: $error'));
+                                            .then((_) =>
+                                                print('Mise à jour réussie'))
+                                            .catchError((error) => print(
+                                                'Erreur de mise à jour: $error'));
                                       },
                                     ),
                                     IconButton(
                                       icon: Icon(Icons.check),
                                       color: Colors.green,
                                       onPressed: () async {
-                                        if (widget.announceData["roomate_number"] as int < int.parse(widget.announceData["max_roomates"])) {
+                                        if (widget.announceData[
+                                                "roomate_number"] as int <
+                                            int.parse(widget.announceData[
+                                                "max_roomates"])) {
                                           FirebaseFirestore.instance
                                               .collection('application')
                                               .doc(applications[index].id)
                                               .update({
                                                 'state': "accepted",
                                               })
-                                              .then((_) => print('Mise à jour réussie'))
-                                              .catchError((error) => print('Erreur de mise à jour: $error'));
+                                              .then((_) =>
+                                                  print('Mise à jour réussie'))
+                                              .catchError((error) => print(
+                                                  'Erreur de mise à jour: $error'));
                                           FirebaseFirestore.instance
                                               .collection('announce')
                                               .doc(widget.announceData.id)
                                               .update({
-                                                'roomate_number': int.parse(widget.announceData["roomate_number"]) + 1,
+                                                'roomate_number': int.parse(
+                                                        widget.announceData[
+                                                            "roomate_number"]) +
+                                                    1,
                                               })
-                                              .then((_) => print('Mise à jour réussie'))
-                                              .catchError((error) => print('Erreur de mise à jour: $error'));
+                                              .then((_) =>
+                                                  print('Mise à jour réussie'))
+                                              .catchError((error) => print(
+                                                  'Erreur de mise à jour: $error'));
                                         } else {
                                           showDialog(
                                             context: context,
@@ -213,11 +263,22 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                                   ElevatedButton(
                                                     child: Text('Lu'),
                                                     style: ButtonStyle(
-                                                      backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 222, 218, 218)),
-                                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all<Color>(Color
+                                                                  .fromARGB(
+                                                                      255,
+                                                                      222,
+                                                                      218,
+                                                                      218)),
+                                                      foregroundColor:
+                                                          MaterialStateProperty
+                                                              .all<Color>(
+                                                                  Colors.black),
                                                     ),
                                                     onPressed: () {
-                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context)
+                                                          .pop();
                                                     },
                                                   ),
                                                 ],
@@ -237,7 +298,8 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                               context: context,
                               builder: (BuildContext context) {
                                 return AlertDialog(
-                                  title: Text('Message de ${user['first_last_name']}'),
+                                  title: Text(
+                                      'Message de ${user['first_last_name']}'),
                                   content: Text(
                                     applications[index]['description'],
                                   ),
@@ -245,8 +307,13 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                     ElevatedButton(
                                       child: Text('Lu'),
                                       style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 222, 218, 218)),
-                                        foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                        backgroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Color.fromARGB(
+                                                    255, 222, 218, 218)),
+                                        foregroundColor:
+                                            MaterialStateProperty.all<Color>(
+                                                Colors.black),
                                       ),
                                       onPressed: () {
                                         Navigator.of(context).pop();
@@ -275,8 +342,11 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                   borderRadius: BorderRadius.circular(50),
                                   child: Image.network(
                                     ("user['imageUrl'] as String"),
-                                    errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                      return Image.asset('assets/images/placeholder.jpg');
+                                    errorBuilder: (BuildContext context,
+                                        Object exception,
+                                        StackTrace? stackTrace) {
+                                      return Image.asset(
+                                          'assets/images/placeholder.jpg');
                                     },
                                     width: 50,
                                     height: 50,
@@ -287,12 +357,16 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                   child: Column(
                                     children: [
                                       Text(
-                                        applications[index]['description'].length > 125
+                                        applications[index]['description']
+                                                    .length >
+                                                125
                                             ? '${applications[index]['description'].substring(0, 125)}...'
-                                            : applications[index]['description'],
+                                            : applications[index]
+                                                ['description'],
                                       ),
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
                                         children: [
                                           IconButton(
                                             icon: Icon(
@@ -303,44 +377,75 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                               showModalBottomSheet(
                                                 isScrollControlled: true,
                                                 context: context,
-                                                builder: (BuildContext context) {
+                                                builder:
+                                                    (BuildContext context) {
                                                   return StatefulBuilder(
-                                                    builder: (BuildContext context, StateSetter setState) {
+                                                    builder: (BuildContext
+                                                            context,
+                                                        StateSetter setState) {
                                                       return Stack(
                                                         children: [
                                                           SingleChildScrollView(
                                                             child: Padding(
-                                                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                              padding: EdgeInsets.only(
+                                                                  bottom: MediaQuery.of(
+                                                                          context)
+                                                                      .viewInsets
+                                                                      .bottom),
                                                               child: Container(
-                                                                padding: const EdgeInsets.all(20),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(20),
                                                                 child: Column(
                                                                   children: [
-                                                                    SizedBox(height: 20.0),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            20.0),
                                                                     ClipRRect(
-                                                                      borderRadius: BorderRadius.circular(50),
-                                                                      child: Image.network(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                              50),
+                                                                      child: Image
+                                                                          .network(
                                                                         ("user['imageUrl'] as String"),
-                                                                        errorBuilder:
-                                                                            (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                                                          return Image.asset('assets/images/placeholder.jpg');
+                                                                        errorBuilder: (BuildContext context,
+                                                                            Object
+                                                                                exception,
+                                                                            StackTrace?
+                                                                                stackTrace) {
+                                                                          return Image.asset(
+                                                                              'assets/images/placeholder.jpg');
                                                                         },
-                                                                        width: 75,
-                                                                        height: 75,
+                                                                        width:
+                                                                            75,
+                                                                        height:
+                                                                            75,
                                                                       ),
                                                                     ),
-                                                                    SizedBox(height: 10.0),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            10.0),
                                                                     Text(
-                                                                      user['first_last_name'],
-                                                                      style: TextStyle(
-                                                                        fontSize: 22.0,
-                                                                        fontWeight: FontWeight.bold,
+                                                                      user[
+                                                                          'first_last_name'],
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            22.0,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
                                                                       ),
                                                                     ),
-                                                                    SizedBox(height: 20.0),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            20.0),
                                                                     Divider(),
                                                                     ListTile(
-                                                                      leading: Icon(Icons.call),
-                                                                      title: Text('Appeler au ${user['mobile_phone']}'),
+                                                                      leading: Icon(
+                                                                          Icons
+                                                                              .call),
+                                                                      title: Text(
+                                                                          'Appeler au ${user['mobile_phone']}'),
                                                                     ),
                                                                   ],
                                                                 ),
@@ -367,16 +472,23 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                                   .update({
                                                     'state': "refused",
                                                   })
-                                                  .then((_) => print('Mise à jour réussie'))
-                                                  .catchError((error) => print('Erreur de mise à jour: $error'));
+                                                  .then((_) => print(
+                                                      'Mise à jour réussie'))
+                                                  .catchError((error) => print(
+                                                      'Erreur de mise à jour: $error'));
                                               FirebaseFirestore.instance
                                                   .collection('announce')
                                                   .doc(widget.announceData.id)
                                                   .update({
-                                                    'roomate_number': int.parse(widget.announceData["roomate_number"]) - 1,
+                                                    'roomate_number': int.parse(
+                                                            widget.announceData[
+                                                                "roomate_number"]) -
+                                                        1,
                                                   })
-                                                  .then((_) => print('Mise à jour réussie'))
-                                                  .catchError((error) => print('Erreur de mise à jour: $error'));
+                                                  .then((_) => print(
+                                                      'Mise à jour réussie'))
+                                                  .catchError((error) => print(
+                                                      'Erreur de mise à jour: $error'));
                                             },
                                           )
                                         ],
@@ -389,7 +501,8 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                     context: context,
                                     builder: (BuildContext context) {
                                       return AlertDialog(
-                                        title: Text('Message de ${user['first_last_name']}'),
+                                        title: Text(
+                                            'Message de ${user['first_last_name']}'),
                                         content: Text(
                                           applications[index]['description'],
                                         ),
@@ -397,8 +510,14 @@ class _PropertyApplicationPageState extends State<PropertyApplicationPage> {
                                           ElevatedButton(
                                             child: Text('Lu'),
                                             style: ButtonStyle(
-                                              backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 222, 218, 218)),
-                                              foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                              backgroundColor:
+                                                  MaterialStateProperty.all<
+                                                          Color>(
+                                                      Color.fromARGB(
+                                                          255, 222, 218, 218)),
+                                              foregroundColor:
+                                                  MaterialStateProperty.all<
+                                                      Color>(Colors.black),
                                             ),
                                             onPressed: () {
                                               Navigator.of(context).pop();

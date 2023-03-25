@@ -78,39 +78,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:
-          // DefaultTabController(
-          //   length: 2,
-          //   child: Column(
-          //     children: <Widget>[
-          //       Material(
-          //         color: Color.fromARGB(255, 255, 255, 255),
-          //         child: TabBar(
-          //           controller: _tabController,
-          //           tabs: [
-          //             Tab(
-          //               icon: Icon(
-          //                 Icons.house,
-          //                 color: MyTheme.blue1,
-          //               ),
-          //             ),
-          //             Tab(
-          //               icon: Icon(
-          //                 Icons.list_alt,
-          //                 color: MyTheme.blue1,
-          //               ),
-          //             ),
-          //           ],
-          //           onTap: (_) {
-          //             _onTabChanged();
-          //           },
-          //         ),
-          //       ),
-          // TabBarView(
-          //   controller: _tabController,
-          //   children: [
-          Container(
-        padding: const EdgeInsets.all(20),
+      body: Container(
+        padding: const EdgeInsets.all(0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -124,9 +93,13 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
                     .collection('property')
-                    .where('id_owner', isEqualTo: FirebaseFirestore.instance.collection('Users').doc(auth.currentUser!.uid))
+                    .where('id_owner',
+                        isEqualTo: FirebaseFirestore.instance
+                            .collection('Users')
+                            .doc(auth.currentUser!.uid))
                     .snapshots(),
-                builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                builder: (BuildContext context,
+                    AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasError) {
                     return Center(child: Text('Une erreur est survenue.'));
                   }
@@ -148,46 +121,57 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                             height: 10,
                           ),
                           ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              side: BorderSide(color: Colors.grey),
-                            ),
                             contentPadding: EdgeInsets.all(0),
-                            leading: Image.network(
-                              (doc['imageUrl1'] as String),
-                              errorBuilder: (BuildContext context, Object exception, StackTrace? stackTrace) {
-                                return Image.asset('assets/images/placeholder.jpg');
+                            leading: CircleAvatar(
+                              radius: 30,
+                              backgroundImage: NetworkImage(
+                                (doc['imageUrl1'] as String),
+                              ),
+                              onBackgroundImageError: (exception, stackTrace) {
+                                AssetImage('assets/images/placeholder.jpg');
                               },
-                              width: 50,
-                              height: 50,
                             ),
                             title: Text(doc['property_name']),
                             subtitle: Container(
                               child: Column(
                                 children: [
                                   Text(
-                                    doc['description'].length > 125 ? '${doc['description'].substring(0, 125)}...' : doc['description'],
+                                    doc['description'].length > 80
+                                        ? '${doc['description'].substring(0, 80)}...'
+                                        : doc['description'],
                                   ),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
                                       IconButton(
-                                        icon: Icon(Icons.publish),
+                                        icon: Icon(
+                                          Icons.publish,
+                                          size: 20,
+                                        ),
                                         color: Colors.green,
                                         onPressed: () async {
                                           var propertyId = doc.id;
-                                          final FirebaseFirestore firestore = FirebaseFirestore.instance;
-                                          final DocumentReference propertyToPublishAnnounce = firestore.collection('property').doc(propertyId);
+                                          final FirebaseFirestore firestore =
+                                              FirebaseFirestore.instance;
+                                          final DocumentReference
+                                              propertyToPublishAnnounce =
+                                              firestore
+                                                  .collection('property')
+                                                  .doc(propertyId);
 
                                           FirebaseFirestore.instance
                                               .collection('announce')
-                                              .where('property_id', isEqualTo: propertyToPublishAnnounce)
+                                              .where('property_id',
+                                                  isEqualTo:
+                                                      propertyToPublishAnnounce)
                                               .get()
                                               .then((querySnapshot) {
                                             if (querySnapshot.size > 0) {
                                               showDialog(
                                                 context: context,
-                                                builder: (BuildContext context) {
+                                                builder:
+                                                    (BuildContext context) {
                                                   return AlertDialog(
                                                     title: Text('Attention'),
                                                     content: Text(
@@ -197,11 +181,23 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                       ElevatedButton(
                                                         child: Text('Compris'),
                                                         style: ButtonStyle(
-                                                          backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(255, 222, 218, 218)),
-                                                          foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                          backgroundColor:
+                                                              MaterialStateProperty
+                                                                  .all<Color>(Color
+                                                                      .fromARGB(
+                                                                          255,
+                                                                          222,
+                                                                          218,
+                                                                          218)),
+                                                          foregroundColor:
+                                                              MaterialStateProperty
+                                                                  .all<Color>(
+                                                                      Colors
+                                                                          .black),
                                                         ),
                                                         onPressed: () {
-                                                          Navigator.of(context).pop();
+                                                          Navigator.of(context)
+                                                              .pop();
                                                         },
                                                       ),
                                                     ],
@@ -212,88 +208,125 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                               showModalBottomSheet(
                                                 isScrollControlled: true,
                                                 context: context,
-                                                builder: (BuildContext context) {
+                                                builder:
+                                                    (BuildContext context) {
                                                   // si annonce déja existante, afficher dialog pour dire que annonce deja existante pour la propriete
                                                   return StatefulBuilder(
-                                                    builder: (BuildContext context, StateSetter setState) {
+                                                    builder: (BuildContext
+                                                            context,
+                                                        StateSetter setState) {
                                                       return Stack(
                                                         children: [
                                                           SingleChildScrollView(
                                                             child: Padding(
-                                                              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                              padding: EdgeInsets.only(
+                                                                  bottom: MediaQuery.of(
+                                                                          context)
+                                                                      .viewInsets
+                                                                      .bottom),
                                                               child: Container(
-                                                                padding: const EdgeInsets.all(20),
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(20),
                                                                 child: Form(
                                                                   key: _formKey,
                                                                   child: Column(
-                                                                    mainAxisSize: MainAxisSize.min,
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
                                                                     children: [
                                                                       Text(
                                                                         "Publier une annonce pour ${doc['property_name']}",
-                                                                        style: TextStyle(
-                                                                          fontSize: 20,
-                                                                          fontWeight: FontWeight.bold,
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              20,
+                                                                          fontWeight:
+                                                                              FontWeight.bold,
                                                                         ),
                                                                       ),
                                                                       TextFormField(
-                                                                        controller: _depositAmountController,
-                                                                        keyboardType: TextInputType.number,
+                                                                        controller:
+                                                                            _depositAmountController,
+                                                                        keyboardType:
+                                                                            TextInputType.number,
                                                                         decoration: const InputDecoration(
                                                                             labelText: 'Caution',
                                                                             suffixIcon: Icon(
                                                                               Icons.euro_sharp,
                                                                             )),
-                                                                        validator: (value) {
-                                                                          if (value!.isEmpty) {
+                                                                        validator:
+                                                                            (value) {
+                                                                          if (value!
+                                                                              .isEmpty) {
                                                                             return 'Montant incorrect';
                                                                           }
                                                                           return null;
                                                                         },
                                                                       ),
                                                                       TextFormField(
-                                                                        controller: _maxRoomatesController,
-                                                                        keyboardType: TextInputType.number,
+                                                                        controller:
+                                                                            _maxRoomatesController,
+                                                                        keyboardType:
+                                                                            TextInputType.number,
                                                                         decoration: const InputDecoration(
                                                                             labelText: 'Nombre de colocataire',
                                                                             suffixIcon: Icon(
                                                                               Icons.groups_sharp,
                                                                             )),
-                                                                        validator: (value) {
-                                                                          if (value!.isEmpty || int.parse(value) <= 1) {
+                                                                        validator:
+                                                                            (value) {
+                                                                          if (value!.isEmpty ||
+                                                                              int.parse(value) <= 1) {
                                                                             return 'Valeur incorrecte';
                                                                           }
                                                                           return null;
                                                                         },
                                                                       ),
                                                                       TextFormField(
-                                                                        controller: _priceController,
-                                                                        keyboardType: TextInputType.number,
-                                                                        decoration: const InputDecoration(
-                                                                          suffixIcon: Icon(
+                                                                        controller:
+                                                                            _priceController,
+                                                                        keyboardType:
+                                                                            TextInputType.number,
+                                                                        decoration:
+                                                                            const InputDecoration(
+                                                                          suffixIcon:
+                                                                              Icon(
                                                                             Icons.euro_sharp,
                                                                           ),
-                                                                          labelText: 'Loyer',
+                                                                          labelText:
+                                                                              'Loyer',
                                                                         ),
-                                                                        validator: (value) {
-                                                                          if (value!.isEmpty) {
+                                                                        validator:
+                                                                            (value) {
+                                                                          if (value!
+                                                                              .isEmpty) {
                                                                             return 'Montant incorrect';
                                                                           }
                                                                           return null;
                                                                         },
                                                                       ),
                                                                       ElevatedButton(
-                                                                        onPressed: () async {
-                                                                          setState(() {
-                                                                            _isLoading = true;
+                                                                        onPressed:
+                                                                            () async {
+                                                                          setState(
+                                                                              () {
+                                                                            _isLoading =
+                                                                                true;
                                                                           });
-                                                                          if (_formKey.currentState!.validate()) {
+                                                                          if (_formKey
+                                                                              .currentState!
+                                                                              .validate()) {
                                                                             _formKey.currentState!.save();
-                                                                            final CollectionReference<Map<String, dynamic>> propertyRef =
+                                                                            final CollectionReference<Map<String, dynamic>>
+                                                                                propertyRef =
                                                                                 FirebaseFirestore.instance.collection('property');
-                                                                            final CollectionReference<Map<String, dynamic>> announceRef =
+                                                                            final CollectionReference<Map<String, dynamic>>
+                                                                                announceRef =
                                                                                 FirebaseFirestore.instance.collection('announce');
 
-                                                                            final DocumentReference<Map<String, dynamic>> property =
+                                                                            final DocumentReference<Map<String, dynamic>>
+                                                                                property =
                                                                                 propertyRef.doc(doc.id);
 
                                                                             await announceRef.add({
@@ -308,7 +341,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                             Navigator.pop(context);
                                                                           }
                                                                         },
-                                                                        child: const Text(
+                                                                        child:
+                                                                            const Text(
                                                                           'Enregistrer',
                                                                         ),
                                                                       ),
@@ -326,7 +360,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                               );
                                             }
                                           }).catchError((error) {
-                                            print('Failed to get object: $error');
+                                            print(
+                                                'Failed to get object: $error');
                                           });
                                           setState(() {
                                             _isLoading = false;
@@ -337,88 +372,155 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                         icon: Icon(
                                           Icons.edit,
                                           color: MyTheme.blue3,
+                                          size: 18,
                                         ),
                                         onPressed: () async {
-                                          var ville = (doc["city"] as String).split(',')[0];
-                                          await fetchData("https://geo.api.gouv.fr/communes?nom=${ville}&fields=departement&limit=5", "searchCity");
-                                          final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-                                          DocumentReference propertyTypeRef = _firestore.collection('property_type').doc(doc["property_type_id"].id);
-                                          DocumentSnapshot snapshot = await propertyTypeRef.get();
-                                          var data = snapshot.data() as Map<String, dynamic>;
-                                          String? propertyTypeLabel = data['property_type_label'] as String;
+                                          var ville = (doc["city"] as String)
+                                              .split(',')[0];
+                                          await fetchData(
+                                              "https://geo.api.gouv.fr/communes?nom=${ville}&fields=departement&limit=5",
+                                              "searchCity");
+                                          final FirebaseFirestore _firestore =
+                                              FirebaseFirestore.instance;
+                                          DocumentReference propertyTypeRef =
+                                              _firestore
+                                                  .collection('property_type')
+                                                  .doc(doc["property_type_id"]
+                                                      .id);
+                                          DocumentSnapshot snapshot =
+                                              await propertyTypeRef.get();
+                                          var data = snapshot.data()
+                                              as Map<String, dynamic>;
+                                          String? propertyTypeLabel =
+                                              data['property_type_label']
+                                                  as String;
 
-                                          var newPropertyName = doc["property_name"] as String;
-                                          var newPropertyDescription = doc["description"] as String;
-                                          var newAddress = (doc["address"] as String);
+                                          var newPropertyName =
+                                              doc["property_name"] as String;
+                                          var newPropertyDescription =
+                                              doc["description"] as String;
+                                          var newAddress =
+                                              (doc["address"] as String);
                                           var newCity = (doc["city"] as String);
-                                          var newPropertyTypeId = doc["property_type_id"].id;
-                                          var newNumberRooms = doc["room_number"];
-                                          var newSurfaceArea = doc["surface_area"];
-                                          dynamic newImage1 = (doc['imageUrl1'] as String);
-                                          dynamic newImage2 = (doc['imageUrl2'] as String);
-                                          dynamic newImage3 = (doc['imageUrl3'] as String);
+                                          var newPropertyTypeId =
+                                              doc["property_type_id"].id;
+                                          var newNumberRooms =
+                                              doc["room_number"];
+                                          var newSurfaceArea =
+                                              doc["surface_area"];
+                                          dynamic newImage1 =
+                                              (doc['imageUrl1'] as String);
+                                          dynamic newImage2 =
+                                              (doc['imageUrl2'] as String);
+                                          dynamic newImage3 =
+                                              (doc['imageUrl3'] as String);
                                           var townSearchText = "";
                                           showModalBottomSheet(
                                             isScrollControlled: true,
                                             context: context,
                                             builder: (BuildContext context) {
                                               return StatefulBuilder(
-                                                builder: (BuildContext context, StateSetter setState) {
+                                                builder: (BuildContext context,
+                                                    StateSetter setState) {
                                                   return Stack(
                                                     children: [
                                                       SingleChildScrollView(
                                                         child: Padding(
-                                                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                                          padding: EdgeInsets.only(
+                                                              bottom: MediaQuery
+                                                                      .of(context)
+                                                                  .viewInsets
+                                                                  .bottom),
                                                           child: Container(
-                                                            padding: const EdgeInsets.all(20),
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(20),
                                                             child: Form(
                                                               key: _formKey,
                                                               child: Column(
-                                                                mainAxisSize: MainAxisSize.min,
+                                                                mainAxisSize:
+                                                                    MainAxisSize
+                                                                        .min,
                                                                 children: [
                                                                   Text(
-                                                                    "Editer la propriété ${doc.id}",
-                                                                    style: TextStyle(
-                                                                      fontSize: 20,
-                                                                      fontWeight: FontWeight.bold,
+                                                                    "Editer la propriété",
+                                                                    style:
+                                                                        TextStyle(
+                                                                      fontSize:
+                                                                          20,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
                                                                     ),
                                                                   ),
                                                                   TextFormField(
-                                                                    onChanged: (value) => {newPropertyName = value},
-                                                                    initialValue: doc["property_name"] as String,
-                                                                    decoration: const InputDecoration(
-                                                                      labelText: 'Nom de la propriété',
+                                                                    onChanged:
+                                                                        (value) =>
+                                                                            {
+                                                                      newPropertyName =
+                                                                          value
+                                                                    },
+                                                                    initialValue:
+                                                                        doc["property_name"]
+                                                                            as String,
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      labelText:
+                                                                          'Nom de la propriété',
                                                                     ),
-                                                                    validator: (value) {
-                                                                      if (value!.isEmpty) {
+                                                                    validator:
+                                                                        (value) {
+                                                                      if (value!
+                                                                          .isEmpty) {
                                                                         return 'Le nom ne peux pas être vide';
                                                                       }
                                                                       return null;
                                                                     },
                                                                   ),
                                                                   TextFormField(
-                                                                    onChanged: (value) => {newPropertyDescription = value},
-                                                                    initialValue: doc["description"] as String,
+                                                                    onChanged:
+                                                                        (value) =>
+                                                                            {
+                                                                      newPropertyDescription =
+                                                                          value
+                                                                    },
+                                                                    initialValue:
+                                                                        doc["description"]
+                                                                            as String,
                                                                     minLines: 2,
                                                                     maxLines: 3,
-                                                                    decoration: const InputDecoration(
-                                                                      labelText: 'Description',
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      labelText:
+                                                                          'Description',
                                                                     ),
-                                                                    validator: (value) {
-                                                                      if (value!.isEmpty) {
+                                                                    validator:
+                                                                        (value) {
+                                                                      if (value!
+                                                                          .isEmpty) {
                                                                         return 'La description ne peux pas être vide';
                                                                       }
                                                                       return null;
                                                                     },
                                                                   ),
                                                                   TextFormField(
-                                                                    onChanged: (value) => {newAddress = value},
-                                                                    initialValue: newAddress,
-                                                                    decoration: const InputDecoration(
-                                                                      labelText: 'Adresse',
+                                                                    onChanged:
+                                                                        (value) =>
+                                                                            {
+                                                                      newAddress =
+                                                                          value
+                                                                    },
+                                                                    initialValue:
+                                                                        newAddress,
+                                                                    decoration:
+                                                                        const InputDecoration(
+                                                                      labelText:
+                                                                          'Adresse',
                                                                     ),
-                                                                    validator: (value) {
-                                                                      if (value!.isEmpty) {
+                                                                    validator:
+                                                                        (value) {
+                                                                      if (value!
+                                                                          .isEmpty) {
                                                                         return 'L\'adresse ne peux pas être vide';
                                                                       }
                                                                       return null;
@@ -427,89 +529,148 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                   Row(
                                                                     children: [
                                                                       Expanded(
-                                                                        child: TextField(
-                                                                          decoration: InputDecoration(
-                                                                            hintText: 'Recherchez une ville',
+                                                                        child:
+                                                                            TextField(
+                                                                          decoration:
+                                                                              InputDecoration(
+                                                                            hintText:
+                                                                                'Recherchez une ville',
                                                                           ),
-                                                                          onSubmitted: _handleSubmitted,
-                                                                          onChanged: (value) => {townSearchText = value},
+                                                                          onSubmitted:
+                                                                              _handleSubmitted,
+                                                                          onChanged:
+                                                                              (value) => {
+                                                                            townSearchText =
+                                                                                value
+                                                                          },
                                                                         ),
                                                                       ),
-                                                                      SizedBox(width: 16.0),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              16.0),
                                                                       ElevatedButton(
-                                                                        onPressed: () {
+                                                                        onPressed:
+                                                                            () {
                                                                           _handleSubmitted(
                                                                               "https://geo.api.gouv.fr/communes?nom=${townSearchText}&fields=departement&limit=5");
                                                                         },
-                                                                        child: Icon(Icons.search),
+                                                                        child: Icon(
+                                                                            Icons.search),
                                                                       ),
                                                                     ],
                                                                   ),
                                                                   DropDownTextField(
-                                                                    initialValue: newCity,
-                                                                    clearOption: false,
-                                                                    searchDecoration: InputDecoration(
-                                                                      contentPadding: EdgeInsets.symmetric(
-                                                                        horizontal: 16.0,
-                                                                        vertical: 12.0,
+                                                                    initialValue:
+                                                                        newCity,
+                                                                    clearOption:
+                                                                        false,
+                                                                    searchDecoration:
+                                                                        InputDecoration(
+                                                                      contentPadding:
+                                                                          EdgeInsets
+                                                                              .symmetric(
+                                                                        horizontal:
+                                                                            16.0,
+                                                                        vertical:
+                                                                            12.0,
                                                                       ),
-                                                                      hintText: "Ville",
+                                                                      hintText:
+                                                                          "Ville",
                                                                     ),
-                                                                    validator: (value) {
-                                                                      if (value == null || value.isEmpty) {
+                                                                    validator:
+                                                                        (value) {
+                                                                      if (value ==
+                                                                              null ||
+                                                                          value
+                                                                              .isEmpty) {
                                                                         return "Choisissez une ville";
                                                                       } else {
                                                                         return null;
                                                                       }
                                                                     },
-                                                                    dropDownItemCount: 6,
-                                                                    dropDownList: _cityOptions,
-                                                                    onChanged: (val) {
-                                                                      newCity = val.value;
+                                                                    dropDownItemCount:
+                                                                        6,
+                                                                    dropDownList:
+                                                                        _cityOptions,
+                                                                    onChanged:
+                                                                        (val) {
+                                                                      newCity =
+                                                                          val.value;
                                                                     },
-                                                                    textFieldDecoration: InputDecoration(
-                                                                      hintText: "Recherchez une ville ci-dessus",
+                                                                    textFieldDecoration:
+                                                                        InputDecoration(
+                                                                      hintText:
+                                                                          "Recherchez une ville ci-dessus",
                                                                     ),
                                                                   ),
                                                                   DropDownTextField(
-                                                                    initialValue: propertyTypeLabel,
-                                                                    clearOption: false,
-                                                                    searchDecoration: InputDecoration(
-                                                                      contentPadding: EdgeInsets.symmetric(
-                                                                        horizontal: 16.0,
-                                                                        vertical: 12.0,
+                                                                    initialValue:
+                                                                        propertyTypeLabel,
+                                                                    clearOption:
+                                                                        false,
+                                                                    searchDecoration:
+                                                                        InputDecoration(
+                                                                      contentPadding:
+                                                                          EdgeInsets
+                                                                              .symmetric(
+                                                                        horizontal:
+                                                                            16.0,
+                                                                        vertical:
+                                                                            12.0,
                                                                       ),
-                                                                      hintText: "Type de propriété",
+                                                                      hintText:
+                                                                          "Type de propriété",
                                                                     ),
-                                                                    validator: (value) {
-                                                                      if (value == null || value.isEmpty) {
+                                                                    validator:
+                                                                        (value) {
+                                                                      if (value ==
+                                                                              null ||
+                                                                          value
+                                                                              .isEmpty) {
                                                                         return "Choisissez le type de votre propriété";
                                                                       } else {
                                                                         return null;
                                                                       }
                                                                     },
-                                                                    dropDownItemCount: 6,
-                                                                    dropDownList: _optionsPropertyType,
-                                                                    onChanged: (val) {
-                                                                      setState(() {
-                                                                        newPropertyTypeId = val.value;
+                                                                    dropDownItemCount:
+                                                                        6,
+                                                                    dropDownList:
+                                                                        _optionsPropertyType,
+                                                                    onChanged:
+                                                                        (val) {
+                                                                      setState(
+                                                                          () {
+                                                                        newPropertyTypeId =
+                                                                            val.value;
                                                                       });
                                                                     },
-                                                                    textFieldDecoration: InputDecoration(
-                                                                      hintText: "Type de propriété",
+                                                                    textFieldDecoration:
+                                                                        InputDecoration(
+                                                                      hintText:
+                                                                          "Type de propriété",
                                                                     ),
                                                                   ),
                                                                   Row(
                                                                     children: [
                                                                       Expanded(
-                                                                        child: TextFormField(
-                                                                          onChanged: (value) => {newNumberRooms = value},
-                                                                          initialValue: doc["room_number"],
-                                                                          keyboardType: TextInputType.number,
-                                                                          decoration: const InputDecoration(
-                                                                            labelText: 'Nombre de chambre',
+                                                                        child:
+                                                                            TextFormField(
+                                                                          onChanged:
+                                                                              (value) => {
+                                                                            newNumberRooms =
+                                                                                value
+                                                                          },
+                                                                          initialValue:
+                                                                              doc["room_number"],
+                                                                          keyboardType:
+                                                                              TextInputType.number,
+                                                                          decoration:
+                                                                              const InputDecoration(
+                                                                            labelText:
+                                                                                'Nombre de chambre',
                                                                           ),
-                                                                          validator: (value) {
+                                                                          validator:
+                                                                              (value) {
                                                                             if (value!.isEmpty) {
                                                                               return 'Nombre de chambre incorrect';
                                                                             }
@@ -517,16 +678,28 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                           },
                                                                         ),
                                                                       ),
-                                                                      SizedBox(width: 16),
+                                                                      SizedBox(
+                                                                          width:
+                                                                              16),
                                                                       Expanded(
-                                                                        child: TextFormField(
-                                                                          onChanged: (value) => {newSurfaceArea = value},
-                                                                          initialValue: doc["surface_area"],
-                                                                          keyboardType: TextInputType.number,
-                                                                          decoration: const InputDecoration(
-                                                                            labelText: 'Surface en m²',
+                                                                        child:
+                                                                            TextFormField(
+                                                                          onChanged:
+                                                                              (value) => {
+                                                                            newSurfaceArea =
+                                                                                value
+                                                                          },
+                                                                          initialValue:
+                                                                              doc["surface_area"],
+                                                                          keyboardType:
+                                                                              TextInputType.number,
+                                                                          decoration:
+                                                                              const InputDecoration(
+                                                                            labelText:
+                                                                                'Surface en m²',
                                                                           ),
-                                                                          validator: (value) {
+                                                                          validator:
+                                                                              (value) {
                                                                             if (value!.isEmpty) {
                                                                               return 'Valeur incorrecte';
                                                                             }
@@ -536,11 +709,16 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                       ),
                                                                     ],
                                                                   ),
-                                                                  const SizedBox(height: 10),
+                                                                  const SizedBox(
+                                                                      height:
+                                                                          10),
                                                                   Row(
-                                                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .spaceEvenly,
                                                                     children: [
-                                                                      (newImage1 == "")
+                                                                      (newImage1 ==
+                                                                              "")
                                                                           ? PropertyImagePicker(
                                                                               onImagesSelected: (image) {
                                                                                 setState(() {
@@ -556,7 +734,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                               },
                                                                               defaultImage: newImage1,
                                                                             ),
-                                                                      (newImage2 == "")
+                                                                      (newImage2 ==
+                                                                              "")
                                                                           ? PropertyImagePicker(
                                                                               onImagesSelected: (image) {
                                                                                 setState(() {
@@ -572,7 +751,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                               },
                                                                               defaultImage: newImage2,
                                                                             ),
-                                                                      (newImage3 == "")
+                                                                      (newImage3 ==
+                                                                              "")
                                                                           ? PropertyImagePicker(
                                                                               onImagesSelected: (image) {
                                                                                 setState(() {
@@ -591,66 +771,133 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                     ],
                                                                   ),
                                                                   ElevatedButton(
-                                                                    onPressed: () async {
-                                                                      setState(() {
-                                                                        _isLoading = true;
+                                                                    onPressed:
+                                                                        () async {
+                                                                      setState(
+                                                                          () {
+                                                                        _isLoading =
+                                                                            true;
                                                                       });
-                                                                      if (_formKey.currentState!.validate()) {
-                                                                        _formKey.currentState!.save();
-                                                                        String address = newAddress + " " + newCity;
-                                                                        String url =
+                                                                      if (_formKey
+                                                                          .currentState!
+                                                                          .validate()) {
+                                                                        _formKey
+                                                                            .currentState!
+                                                                            .save();
+                                                                        String address = newAddress +
+                                                                            " " +
+                                                                            newCity;
+                                                                        String
+                                                                            url =
                                                                             "https://api-adresse.data.gouv.fr/search/?q=${address.replaceAll(" ", "+").replaceAll(",", "")}&limit=1";
-                                                                        await fetchData(url, "requestType");
+                                                                        await fetchData(
+                                                                            url,
+                                                                            "requestType");
                                                                         // send img if new image, and compare with old
-                                                                        var imgUrl1 = "";
-                                                                        if ((doc['imageUrl1'] as String) != "" && !(newImage1 is String)) {
-                                                                          var baseUrl1 = (doc['imageUrl1'] as String);
-                                                                          final ref = FirebaseStorage.instance.refFromURL(baseUrl1);
-                                                                          await ref.delete();
-                                                                          final compressedImage1 = await compressImage(newImage1);
-                                                                          imgUrl1 = await _uploadImage(compressedImage1!);
-                                                                        } else if ((doc['imageUrl1'] as String) == "" && newImage1 != "") {
-                                                                          final compressedImage1 = await compressImage(newImage1);
-                                                                          imgUrl1 = await _uploadImage(compressedImage1!);
+                                                                        var imgUrl1 =
+                                                                            "";
+                                                                        if ((doc['imageUrl1'] as String) !=
+                                                                                "" &&
+                                                                            !(newImage1
+                                                                                is String)) {
+                                                                          var baseUrl1 =
+                                                                              (doc['imageUrl1'] as String);
+                                                                          final ref = FirebaseStorage
+                                                                              .instance
+                                                                              .refFromURL(baseUrl1);
+                                                                          await ref
+                                                                              .delete();
+                                                                          final compressedImage1 =
+                                                                              await compressImage(newImage1);
+                                                                          imgUrl1 =
+                                                                              await _uploadImage(compressedImage1!);
+                                                                        } else if ((doc['imageUrl1'] as String) ==
+                                                                                "" &&
+                                                                            newImage1 !=
+                                                                                "") {
+                                                                          final compressedImage1 =
+                                                                              await compressImage(newImage1);
+                                                                          imgUrl1 =
+                                                                              await _uploadImage(compressedImage1!);
                                                                         } else {
-                                                                          imgUrl1 = (doc['imageUrl1'] as String);
+                                                                          imgUrl1 =
+                                                                              (doc['imageUrl1'] as String);
                                                                         }
-                                                                        var imgUrl2 = "";
-                                                                        if ((doc['imageUrl2'] as String) != "" && !(newImage2 is String)) {
-                                                                          var baseUrl2 = (doc['imageUrl2'] as String);
-                                                                          final ref = FirebaseStorage.instance.refFromURL(baseUrl2);
-                                                                          await ref.delete();
-                                                                          final compressedImage2 = await compressImage(newImage2);
-                                                                          imgUrl2 = await _uploadImage(compressedImage2!);
-                                                                        } else if ((doc['imageUrl2'] as String) == "" && newImage2 != "") {
-                                                                          final compressedImage2 = await compressImage(newImage2);
-                                                                          imgUrl2 = await _uploadImage(compressedImage2!);
+                                                                        var imgUrl2 =
+                                                                            "";
+                                                                        if ((doc['imageUrl2'] as String) !=
+                                                                                "" &&
+                                                                            !(newImage2
+                                                                                is String)) {
+                                                                          var baseUrl2 =
+                                                                              (doc['imageUrl2'] as String);
+                                                                          final ref = FirebaseStorage
+                                                                              .instance
+                                                                              .refFromURL(baseUrl2);
+                                                                          await ref
+                                                                              .delete();
+                                                                          final compressedImage2 =
+                                                                              await compressImage(newImage2);
+                                                                          imgUrl2 =
+                                                                              await _uploadImage(compressedImage2!);
+                                                                        } else if ((doc['imageUrl2'] as String) ==
+                                                                                "" &&
+                                                                            newImage2 !=
+                                                                                "") {
+                                                                          final compressedImage2 =
+                                                                              await compressImage(newImage2);
+                                                                          imgUrl2 =
+                                                                              await _uploadImage(compressedImage2!);
                                                                         } else {
-                                                                          imgUrl2 = (doc['imageUrl2'] as String);
+                                                                          imgUrl2 =
+                                                                              (doc['imageUrl2'] as String);
                                                                         }
-                                                                        var imgUrl3 = "";
-                                                                        if ((doc['imageUrl3'] as String) != "" && !(newImage3 is String)) {
-                                                                          var baseUrl3 = (doc['imageUrl3'] as String);
-                                                                          final ref = FirebaseStorage.instance.refFromURL(baseUrl3);
-                                                                          await ref.delete();
-                                                                          final compressedImage3 = await compressImage(newImage3);
-                                                                          imgUrl3 = await _uploadImage(compressedImage3!);
-                                                                        } else if ((doc['imageUrl3'] as String) == "" && newImage3 != "") {
-                                                                          final compressedImage3 = await compressImage(newImage3);
-                                                                          imgUrl3 = await _uploadImage(compressedImage3!);
+                                                                        var imgUrl3 =
+                                                                            "";
+                                                                        if ((doc['imageUrl3'] as String) !=
+                                                                                "" &&
+                                                                            !(newImage3
+                                                                                is String)) {
+                                                                          var baseUrl3 =
+                                                                              (doc['imageUrl3'] as String);
+                                                                          final ref = FirebaseStorage
+                                                                              .instance
+                                                                              .refFromURL(baseUrl3);
+                                                                          await ref
+                                                                              .delete();
+                                                                          final compressedImage3 =
+                                                                              await compressImage(newImage3);
+                                                                          imgUrl3 =
+                                                                              await _uploadImage(compressedImage3!);
+                                                                        } else if ((doc['imageUrl3'] as String) ==
+                                                                                "" &&
+                                                                            newImage3 !=
+                                                                                "") {
+                                                                          final compressedImage3 =
+                                                                              await compressImage(newImage3);
+                                                                          imgUrl3 =
+                                                                              await _uploadImage(compressedImage3!);
                                                                         } else {
-                                                                          imgUrl3 = (doc['imageUrl3'] as String);
+                                                                          imgUrl3 =
+                                                                              (doc['imageUrl3'] as String);
                                                                         }
 
                                                                         // Submit form
-                                                                        final CollectionReference<Map<String, dynamic>> propertyTypes =
-                                                                            FirebaseFirestore.instance.collection('property_type');
+                                                                        final CollectionReference<
+                                                                            Map<String,
+                                                                                dynamic>> propertyTypes = FirebaseFirestore
+                                                                            .instance
+                                                                            .collection('property_type');
 
-                                                                        final DocumentReference<Map<String, dynamic>> propertyTypeRef =
+                                                                        final DocumentReference<Map<String, dynamic>>
+                                                                            propertyTypeRef =
                                                                             propertyTypes.doc(newPropertyTypeId);
-                                                                        FirebaseFirestore.instance
-                                                                            .collection('property')
-                                                                            .doc(doc.id)
+                                                                        FirebaseFirestore
+                                                                            .instance
+                                                                            .collection(
+                                                                                'property')
+                                                                            .doc(doc
+                                                                                .id)
                                                                             .update({
                                                                               'address': newAddress,
                                                                               'city': newCity,
@@ -664,12 +911,15 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                                               'imageUrl2': imgUrl2,
                                                                               'imageUrl3': imgUrl3,
                                                                             })
-                                                                            .then((_) => print('Mise à jour réussie'))
+                                                                            .then((_) =>
+                                                                                print('Mise à jour réussie'))
                                                                             .catchError((error) => print('Erreur de mise à jour: $error'));
-                                                                        Navigator.pop(context);
+                                                                        Navigator.pop(
+                                                                            context);
                                                                       }
                                                                     },
-                                                                    child: const Text(
+                                                                    child:
+                                                                        const Text(
                                                                       'Enregistrer',
                                                                     ),
                                                                   ),
@@ -681,10 +931,13 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                       ),
                                                       if (_isLoading)
                                                         Container(
-                                                          color: Colors.black.withOpacity(0.5),
+                                                          color: Colors.black
+                                                              .withOpacity(0.5),
                                                           child: Center(
-                                                            child: CircularProgressIndicator(
-                                                              color: MyTheme.blue4,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              color:
+                                                                  MyTheme.blue4,
                                                             ),
                                                           ),
                                                         ),
@@ -703,6 +956,7 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                         icon: Icon(
                                           Icons.delete,
                                           color: Colors.red,
+                                          size: 18,
                                         ),
                                         onPressed: () {
                                           showDialog(
@@ -716,42 +970,76 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                 actions: [
                                                   ElevatedButton(
                                                     style: ButtonStyle(
-                                                      backgroundColor: MaterialStateProperty.all<Color>(
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all<Color>(
                                                         Colors.red,
                                                       ),
                                                     ),
                                                     child: Text('Oui'),
                                                     onPressed: () async {
                                                       var toDeleteId = doc.id;
-                                                      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-                                                      final DocumentReference propertyToDelete = firestore.collection('property').doc(toDeleteId);
+                                                      final FirebaseFirestore
+                                                          firestore =
+                                                          FirebaseFirestore
+                                                              .instance;
+                                                      final DocumentReference
+                                                          propertyToDelete =
+                                                          firestore
+                                                              .collection(
+                                                                  'property')
+                                                              .doc(toDeleteId);
 
                                                       FirebaseFirestore.instance
-                                                          .collection('announce')
-                                                          .where('property_id', isEqualTo: propertyToDelete)
+                                                          .collection(
+                                                              'announce')
+                                                          .where('property_id',
+                                                              isEqualTo:
+                                                                  propertyToDelete)
                                                           .get()
-                                                          .then((querySnapshot) {
-                                                        DocumentSnapshot documentSnapshot = querySnapshot.docs[0];
-                                                        print(documentSnapshot["price"]);
-                                                        if (documentSnapshot['roomate_number'] > 0) {
+                                                          .then(
+                                                              (querySnapshot) {
+                                                        DocumentSnapshot
+                                                            documentSnapshot =
+                                                            querySnapshot
+                                                                .docs[0];
+                                                        print(documentSnapshot[
+                                                            "price"]);
+                                                        if (documentSnapshot[
+                                                                'roomate_number'] >
+                                                            0) {
                                                           showDialog(
                                                             context: context,
-                                                            builder: (BuildContext context) {
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
                                                               return AlertDialog(
-                                                                title: Text('Attention'),
+                                                                title: Text(
+                                                                    'Attention'),
                                                                 content: Text(
                                                                   'Vous ne pouvez pas supprimer cette propriété, elle loge au moins un colocataire !',
                                                                 ),
                                                                 actions: [
                                                                   ElevatedButton(
-                                                                    child: Text('Compris'),
-                                                                    style: ButtonStyle(
-                                                                      backgroundColor:
-                                                                          MaterialStateProperty.all<Color>(Color.fromARGB(255, 222, 218, 218)),
-                                                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                                    child: Text(
+                                                                        'Compris'),
+                                                                    style:
+                                                                        ButtonStyle(
+                                                                      backgroundColor: MaterialStateProperty.all<Color>(Color.fromARGB(
+                                                                          255,
+                                                                          222,
+                                                                          218,
+                                                                          218)),
+                                                                      foregroundColor: MaterialStateProperty.all<
+                                                                              Color>(
+                                                                          Colors
+                                                                              .black),
                                                                     ),
-                                                                    onPressed: () {
-                                                                      Navigator.of(context).pop();
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop();
                                                                     },
                                                                   ),
                                                                 ],
@@ -759,38 +1047,73 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                                             },
                                                           );
                                                         } else {
-                                                          final DocumentReference announceToDelete =
-                                                              firestore.collection('announce').doc(documentSnapshot.id);
-                                                          announceToDelete.delete();
-                                                          propertyToDelete.delete();
+                                                          final DocumentReference
+                                                              announceToDelete =
+                                                              firestore
+                                                                  .collection(
+                                                                      'announce')
+                                                                  .doc(
+                                                                      documentSnapshot
+                                                                          .id);
+                                                          announceToDelete
+                                                              .delete();
+                                                          propertyToDelete
+                                                              .delete();
 
-                                                          if ((doc['imageUrl1'] as String) != "") {
-                                                            final ref = FirebaseStorage.instance.refFromURL((doc['imageUrl1'] as String));
+                                                          if ((doc['imageUrl1']
+                                                                  as String) !=
+                                                              "") {
+                                                            final ref = FirebaseStorage
+                                                                .instance
+                                                                .refFromURL((doc[
+                                                                        'imageUrl1']
+                                                                    as String));
                                                             ref.delete();
                                                           }
-                                                          if ((doc['imageUrl2'] as String) != "") {
-                                                            final ref = FirebaseStorage.instance.refFromURL((doc['imageUrl2'] as String));
+                                                          if ((doc['imageUrl2']
+                                                                  as String) !=
+                                                              "") {
+                                                            final ref = FirebaseStorage
+                                                                .instance
+                                                                .refFromURL((doc[
+                                                                        'imageUrl2']
+                                                                    as String));
                                                             ref.delete();
                                                           }
-                                                          if ((doc['imageUrl3'] as String) != "") {
-                                                            final ref = FirebaseStorage.instance.refFromURL((doc['imageUrl3'] as String));
+                                                          if ((doc['imageUrl3']
+                                                                  as String) !=
+                                                              "") {
+                                                            final ref = FirebaseStorage
+                                                                .instance
+                                                                .refFromURL((doc[
+                                                                        'imageUrl3']
+                                                                    as String));
                                                             ref.delete();
                                                           }
-                                                          Navigator.of(context).pop();
+                                                          Navigator.of(context)
+                                                              .pop();
                                                         }
                                                       }).catchError((error) {
-                                                        print('Failed to get object: $error');
+                                                        print(
+                                                            'Failed to get object: $error');
                                                       });
                                                     },
                                                   ),
                                                   ElevatedButton(
                                                     child: Text('Non'),
                                                     style: ButtonStyle(
-                                                      backgroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                                                      foregroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                                                      backgroundColor:
+                                                          MaterialStateProperty
+                                                              .all<Color>(
+                                                                  Colors.white),
+                                                      foregroundColor:
+                                                          MaterialStateProperty
+                                                              .all<Color>(
+                                                                  Colors.black),
                                                     ),
                                                     onPressed: () {
-                                                      Navigator.of(context).pop();
+                                                      Navigator.of(context)
+                                                          .pop();
                                                     },
                                                   ),
                                                 ],
@@ -827,7 +1150,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                     children: [
                       SingleChildScrollView(
                         child: Padding(
-                          padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                          padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom),
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             child: Form(
@@ -884,7 +1208,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                     children: [
                                       Expanded(
                                         child: TextField(
-                                          controller: _cityTextEditingController,
+                                          controller:
+                                              _cityTextEditingController,
                                           decoration: InputDecoration(
                                             hintText: 'Recherchez une ville',
                                           ),
@@ -926,7 +1251,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                       });
                                     },
                                     textFieldDecoration: InputDecoration(
-                                      hintText: "Recherchez une ville ci-dessus",
+                                      hintText:
+                                          "Recherchez une ville ci-dessus",
                                     ),
                                   ),
                                   DropDownTextField(
@@ -994,7 +1320,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
                                       PropertyImagePicker(
                                         onImagesSelected: (image) {
@@ -1026,7 +1353,10 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                       });
                                       if (_formKey.currentState!.validate()) {
                                         _formKey.currentState!.save();
-                                        String address = _addressController.text + " " + _selectedCity!;
+                                        String address =
+                                            _addressController.text +
+                                                " " +
+                                                _selectedCity!;
                                         String url =
                                             "https://api-adresse.data.gouv.fr/search/?q=${address.replaceAll(" ", "+").replaceAll(",", "")}&limit=1";
                                         await fetchData(url, "requestType");
@@ -1034,35 +1364,62 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
                                         // send img
                                         var imgUrl1 = "";
                                         if (_selectedImage1 != null) {
-                                          final compressedImage1 = await compressImage(_selectedImage1);
-                                          imgUrl1 = await _uploadImage(compressedImage1!);
+                                          final compressedImage1 =
+                                              await compressImage(
+                                                  _selectedImage1);
+                                          imgUrl1 = await _uploadImage(
+                                              compressedImage1!);
                                         }
                                         var imgUrl2 = "";
                                         if (_selectedImage2 != null) {
-                                          final compressedImage2 = await compressImage(_selectedImage2);
-                                          imgUrl2 = await _uploadImage(compressedImage2!);
+                                          final compressedImage2 =
+                                              await compressImage(
+                                                  _selectedImage2);
+                                          imgUrl2 = await _uploadImage(
+                                              compressedImage2!);
                                         }
                                         var imgUrl3 = "";
                                         if (_selectedImage3 != null) {
-                                          final compressedImage3 = await compressImage(_selectedImage3);
-                                          imgUrl3 = await _uploadImage(compressedImage3!);
+                                          final compressedImage3 =
+                                              await compressImage(
+                                                  _selectedImage3);
+                                          imgUrl3 = await _uploadImage(
+                                              compressedImage3!);
                                         }
 
                                         // Submit form
-                                        final CollectionReference<Map<String, dynamic>> users = FirebaseFirestore.instance.collection('Users');
-                                        final CollectionReference<Map<String, dynamic>> propertyTypes =
-                                            FirebaseFirestore.instance.collection('property_type');
+                                        final CollectionReference<
+                                                Map<String, dynamic>> users =
+                                            FirebaseFirestore.instance
+                                                .collection('Users');
+                                        final CollectionReference<
+                                                Map<String, dynamic>>
+                                            propertyTypes = FirebaseFirestore
+                                                .instance
+                                                .collection('property_type');
 
-                                        final DocumentReference<Map<String, dynamic>> userRef = users.doc(auth.currentUser!.uid.toString());
-                                        final DocumentReference<Map<String, dynamic>> propertyTypeRef = propertyTypes.doc(_selectedPropertyTypeUid);
-                                        final collectionRef = FirebaseFirestore.instance.collection('property');
+                                        final DocumentReference<
+                                                Map<String, dynamic>> userRef =
+                                            users.doc(auth.currentUser!.uid
+                                                .toString());
+                                        final DocumentReference<
+                                                Map<String, dynamic>>
+                                            propertyTypeRef = propertyTypes
+                                                .doc(_selectedPropertyTypeUid);
+                                        final collectionRef = FirebaseFirestore
+                                            .instance
+                                            .collection('property');
                                         await collectionRef.add({
                                           'address': _addressController.text,
                                           'city': _selectedCity,
-                                          'description': _descriptionController.text,
-                                          'property_name': _propertyNameController.text,
-                                          'room_number': _roomNumberController.text,
-                                          'surface_area': _surfaceController.text,
+                                          'description':
+                                              _descriptionController.text,
+                                          'property_name':
+                                              _propertyNameController.text,
+                                          'room_number':
+                                              _roomNumberController.text,
+                                          'surface_area':
+                                              _surfaceController.text,
                                           'id_owner': userRef,
                                           'property_type_id': propertyTypeRef,
                                           'position': _newHouseLocation,
@@ -1121,7 +1478,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
   }
 
   Future<void> _loadPropertyTypeOptions() async {
-    final querySnapshot = await FirebaseFirestore.instance.collection('property_type').get();
+    final querySnapshot =
+        await FirebaseFirestore.instance.collection('property_type').get();
 
     List<DropDownValueModel> options = querySnapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
@@ -1149,7 +1507,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
 
   Future<String> _uploadImage(File image) async {
     final storageRef = FirebaseStorage.instance.ref();
-    final imageRef = storageRef.child('images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+    final imageRef =
+        storageRef.child('images/${DateTime.now().millisecondsSinceEpoch}.jpg');
     final uploadTask = imageRef.putFile(image);
     final snapshot = await uploadTask;
     final downloadUrl = await snapshot.ref.getDownloadURL();
@@ -1164,8 +1523,10 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
         if (requestType == "searchCity") {
           final cityOptions = List<DropDownValueModel>.from(data.map((option) {
             return DropDownValueModel(
-              name: "${option['nom']}, ${option['departement']['nom']} ${option['departement']['code']}",
-              value: "${option['nom']}, ${option['departement']['nom']} ${option['departement']['code']}",
+              name:
+                  "${option['nom']}, ${option['departement']['nom']} ${option['departement']['code']}",
+              value:
+                  "${option['nom']}, ${option['departement']['nom']} ${option['departement']['code']}",
             );
           }));
           setState(() {
@@ -1174,7 +1535,9 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
         } else {
           setState(
             () {
-              _newHouseLocation = GeoPoint(data['features'][0]['geometry']['coordinates'][1], data['features'][0]['geometry']['coordinates'][0]);
+              _newHouseLocation = GeoPoint(
+                  data['features'][0]['geometry']['coordinates'][1],
+                  data['features'][0]['geometry']['coordinates'][0]);
             },
           );
         }
@@ -1187,7 +1550,8 @@ class _HomeOwnerState extends State<HomeOwner> with TickerProviderStateMixin {
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('Erreur'),
-            content: Text('Problème avec la récupération des données, signalez cette erreur si elle persiste !'),
+            content: Text(
+                'Problème avec la récupération des données, signalez cette erreur si elle persiste !'),
             actions: [
               TextButton(
                 child: Text('OK'),
